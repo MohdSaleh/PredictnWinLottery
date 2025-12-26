@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { successResponse, errorResponse, ErrorCodes } from '../utils/response';
 import { authMiddleware, requireRole } from '../middleware/auth';
+import { PrismaTransaction } from '../types/prisma';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -42,7 +43,7 @@ router.post('/publish', authMiddleware, requireRole('ADMIN'), async (req: Reques
     }
 
     // Publish result and calculate settlements in a transaction
-    const result = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
+    const result = await prisma.$transaction(async (tx: PrismaTransaction) => {
       // Create or update result
       const newResult = await tx.result.upsert({
         where: {
@@ -189,7 +190,7 @@ router.post('/revoke', authMiddleware, requireRole('ADMIN'), async (req: Request
 
     const resultDate = new Date(date);
 
-    const result = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
+    const result = await prisma.$transaction(async (tx: PrismaTransaction) => {
       const existing = await tx.result.findUnique({
         where: {
           section_id_date: {

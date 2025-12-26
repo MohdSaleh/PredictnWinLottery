@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { successResponse, errorResponse, ErrorCodes } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 import { SalesService } from '../services/sales.service';
+import { PrismaTransaction } from '../types/prisma';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -129,7 +130,7 @@ router.post('/create_bill', authMiddleware, async (req: Request, res: Response) 
     }
 
     // Create bill and entries in a transaction
-    const bill = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
+    const bill = await prisma.$transaction(async (tx: PrismaTransaction) => {
       // Create bill
       const newBill = await tx.bill.create({
         data: {

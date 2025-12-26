@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { successResponse, errorResponse, ErrorCodes } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
+import { SectionGroupMap } from '../types/prisma';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -70,7 +71,7 @@ router.get('/:id/details', authMiddleware, async (req: Request, res: Response) =
       cutoff_offset_minutes: section.cutoff_offset_minutes || 5, // Default to 5 if missing
       series_config: section.series_config,
       is_active: section.is_active,
-      available_digit_groups: section.section_groups.map((sg: { game_group: { id: number; digit_count: number; name: string } }) => ({
+      available_digit_groups: section.section_groups.map((sg: SectionGroupMap) => ({
         id: sg.game_group.id,
         digit_count: sg.game_group.digit_count,
         name: sg.game_group.name,
