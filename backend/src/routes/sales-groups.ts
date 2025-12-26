@@ -39,9 +39,9 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: Request, res:
     });
 
     return res.status(201).json(successResponse({ group }, 'Sales group created'));
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create sales group error:', error);
-    if (error.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return res.status(400).json(
         errorResponse(ErrorCodes.VALIDATION_FAILED, 'Sales group with this name already exists')
       );

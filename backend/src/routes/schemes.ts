@@ -12,7 +12,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     const digit_count = req.query.digit_count ? parseInt(req.query.digit_count as string) : undefined;
     const pattern_type = req.query.pattern_type as string | undefined;
 
-    const where: any = { is_active: true };
+    const where: { is_active: boolean; digit_count?: number; pattern_type?: string } = { is_active: true };
     if (digit_count) {
       where.digit_count = digit_count;
     }
@@ -58,9 +58,9 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: Request, res:
     });
 
     return res.status(201).json(successResponse({ scheme }, 'Scheme created'));
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create scheme error:', error);
-    if (error.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return res.status(400).json(
         errorResponse(ErrorCodes.VALIDATION_FAILED, 'Scheme with this name already exists')
       );

@@ -42,7 +42,7 @@ router.post('/publish', authMiddleware, requireRole('ADMIN'), async (req: Reques
     }
 
     // Publish result and calculate settlements in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
       // Create or update result
       const newResult = await tx.result.upsert({
         where: {
@@ -189,7 +189,7 @@ router.post('/revoke', authMiddleware, requireRole('ADMIN'), async (req: Request
 
     const resultDate = new Date(date);
 
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
       const existing = await tx.result.findUnique({
         where: {
           section_id_date: {
@@ -274,14 +274,14 @@ router.post('/revoke', authMiddleware, requireRole('ADMIN'), async (req: Request
     return res.status(200).json(
       successResponse(result, 'Result revoked successfully')
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Revoke result error:', error);
-    if (error.message === 'Result not found') {
+    if (error instanceof Error && error.message === 'Result not found') {
       return res.status(404).json(
         errorResponse(ErrorCodes.NOT_FOUND, 'Result not found')
       );
     }
-    if (error.message === 'Result already revoked') {
+    if (error instanceof Error && error.message === 'Result already revoked') {
       return res.status(400).json(
         errorResponse(ErrorCodes.VALIDATION_FAILED, 'Result already revoked')
       );
@@ -298,7 +298,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
     const section_id = req.query.section_id ? parseInt(req.query.section_id as string) : undefined;
     const date = req.query.date as string | undefined;
 
-    const where: any = {};
+    const where: { section_id?: number; date?: Date } = {};
     if (section_id) {
       where.section_id = section_id;
     }

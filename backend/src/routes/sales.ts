@@ -129,7 +129,7 @@ router.post('/create_bill', authMiddleware, async (req: Request, res: Response) 
     }
 
     // Create bill and entries in a transaction
-    const bill = await prisma.$transaction(async (tx) => {
+    const bill = await prisma.$transaction(async (tx: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => {
       // Create bill
       const newBill = await tx.bill.create({
         data: {

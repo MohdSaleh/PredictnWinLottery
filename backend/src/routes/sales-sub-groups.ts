@@ -11,7 +11,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
   try {
     const groupId = req.query.group_id ? parseInt(req.query.group_id as string) : undefined;
 
-    const where: any = { is_active: true };
+    const where: { is_active: boolean; sales_group_id?: number } = { is_active: true };
     if (groupId) {
       where.sales_group_id = groupId;
     }
@@ -59,14 +59,14 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: Request, res:
     });
 
     return res.status(201).json(successResponse({ sub_group: subGroup }, 'Sales sub-group created'));
-  } catch (error: any) {
+  } catch (error) {
     console.error('Create sales sub-group error:', error);
-    if (error.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return res.status(400).json(
         errorResponse(ErrorCodes.VALIDATION_FAILED, 'Sales sub-group with this name already exists in this group')
       );
     }
-    if (error.code === 'P2003') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2003') {
       return res.status(400).json(
         errorResponse(ErrorCodes.VALIDATION_FAILED, 'Sales group not found')
       );

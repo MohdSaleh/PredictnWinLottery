@@ -39,7 +39,11 @@ router.get('/number-wise', authMiddleware, async (req: Request, res: Response) =
       },
     });
 
-    const formattedReport = report.map((item) => ({
+    const formattedReport = report.map((item: {
+      number: string;
+      _sum: { quantity: number | null; expanded_count: number | null };
+      _count: { bill_id: number };
+    }) => ({
       number: item.number,
       total_quantity: item._sum.quantity || 0,
       total_count: item._sum.expanded_count || 0,
