@@ -1,12 +1,12 @@
 # Progress (Evidence-Based)
 Date: 2025-12-26
 
-Total Progress: 0%
+Total Progress: 5%
 
 ## Milestones (Weights Locked)
 | Milestone | Weight | Status | Evidence |
 | --- | ---: | --- | --- |
-| M0 Repo Skeleton + Build Health | 5% | Not Started | - |
+| M0 Repo Skeleton + Build Health | 5% | ✅ Complete | docs 2/logs/stage1_build_health.md |
 | M1 Spec Lock + Contracts | 10% | Not Started | - |
 | M2 DB Schema + Seed | 15% | Not Started | - |
 | M3 Backend APIs + Gates + Tests | 20% | Not Started | - |
@@ -17,8 +17,9 @@ Total Progress: 0%
 
 ## Action Log (append)
 - 2025-12-26: initialized docs system.
+- 2025-12-26: completed M0 - repo skeleton with monorepo structure, root scripts, backend health endpoint, and both Expo apps initialized.
 
 ## Next 3 Actions
-1) Run dependency check (`docs/DEPENDENCY_CHECK.md`) and lock inputs.
-2) Create repo skeleton and scripts (M0).
-3) Implement DB schema + seed (M2) with proof queries.
+1) Implement Prisma schema based on DB_SCHEMA_CANONICAL.md (M2).
+2) Create database migrations (M2).
+3) Implement seed script with 4 default sections and required masters (M2).
