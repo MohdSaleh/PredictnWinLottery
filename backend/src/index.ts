@@ -10,6 +10,7 @@ import salesSubGroupsRoutes from './routes/sales-sub-groups';
 import schemesRoutes from './routes/schemes';
 import salesRoutes from './routes/sales';
 import resultsRoutes from './routes/results';
+import reportsRoutes from './routes/reports';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use(`${API_PREFIX}/sales-sub-groups`, salesSubGroupsRoutes);
 app.use(`${API_PREFIX}/schemes`, schemesRoutes);
 app.use(`${API_PREFIX}/sales`, salesRoutes);
 app.use(`${API_PREFIX}/results`, resultsRoutes);
+app.use(`${API_PREFIX}/reports`, reportsRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
