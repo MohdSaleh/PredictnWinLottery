@@ -1,0 +1,367 @@
+// Lottery System Database Schema
+// Based on docs 2/DB_SCHEMA_CANONICAL.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ Core Entities ============
+
+enum UserRole {
+  ADMIN
+  STOCKIST
+  SUBSTOCKIST
+  AGENT
+  SUBAGENT
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  password_hash String
+  name          String?
+  email         String?
+  phone         String?
+  role          UserRole
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relations
+  bills                    Bill[]
+  ticket_assignments       SalesTicketAssignment[]
+  credit_limit             CreditLimit?
+  published_results        Result[]
+  audit_logs              AuditLog[]
+
+  @@map("users")
+}
+
+model Section {
+  id                     Int      @id @default(autoincrement())
+  name                   String   // e.g., "DEAR 1:00 PM"
+  code                   String   @unique // e.g., "DEAR_1PM"
+  draw_time_local        String   // e.g., "13:00"
+  cutoff_offset_minutes  Int      @default(5)
+  series_config          Json     // Array of series strings, e.g., ["A", "B", "C"...]
+  is_active              Boolean  @default(true)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  // Relations
+  section_groups        SectionGroup[]
+  bills                 Bill[]
+  results               Result[]
+  ticket_assignments    SalesTicketAssignment[]
+
+  @@map("sections")
+}
+
+model GameGroup {
+  id          Int      @id @default(autoincrement())
+  digit_count Int      @unique // 1, 2, or 3
+  name        String   // e.g., "1 Digit", "2 Digit", "3 Digit"
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  // Relations
+  section_groups        SectionGroup[]
+  ticket_assignments    SalesTicketAssignment[]
+
+  @@map("game_groups")
+}
+
+model SectionGroup {
+  id          Int      @id @default(autoincrement())
+  section_id  Int
+  group_id    Int
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  // Relations
+  section     Section   @relation(fields: [section_id], references: [id])
+  game_group  GameGroup @relation(fields: [group_id], references: [id])
+
+  @@unique([section_id, group_id])
+  @@map("section_groups")
+}
+
+model SalesGroup {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  sub_groups         SalesSubGroup[]
+  ticket_assignments SalesTicketAssignment[]
+
+  @@map("sales_groups")
+}
+
+model SalesSubGroup {
+  id             Int      @id @default(autoincrement())
+  sales_group_id Int
+  name           String
+  book_code      String?
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relations
+  sales_group        SalesGroup             @relation(fields: [sales_group_id], references: [id])
+  ticket_assignments SalesTicketAssignment[]
+
+  @@unique([sales_group_id, name])
+  @@map("sales_sub_groups")
+}
+
+// ============ Pricing & Payout ============
+
+model Scheme {
+  id                Int      @id @default(autoincrement())
+  name              String   @unique
+  digit_count       Int      // 1, 2, or 3
+  pattern_type      String   // "SET", "ANY", "BOTH", "BOXK", "ALL", etc.
+  base_price        Decimal  @db.Decimal(10, 2)
+  payout_rate       Decimal  @db.Decimal(10, 2)
+  commission_rate   Decimal  @db.Decimal(5, 2) @default(0)
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@map("schemes")
+}
+
+// ============ Sales ============
+
+enum BillStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  CANCELLED
+}
+
+model Bill {
+  id            Int        @id @default(autoincrement())
+  user_id       Int
+  section_id    Int
+  date          DateTime   @db.Date
+  total_count   Int        @default(0)
+  total_amount  Decimal    @db.Decimal(10, 2) @default(0)
+  status        BillStatus @default(PENDING)
+  is_offline    Boolean    @default(false) // For offline queue tracking
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  // Relations
+  user          User         @relation(fields: [user_id], references: [id])
+  section       Section      @relation(fields: [section_id], references: [id])
+  entries       BillEntry[]
+
+  @@index([user_id, date])
+  @@index([section_id, date])
+  @@map("bills")
+}
+
+model BillEntry {
+  id              Int      @id @default(autoincrement())
+  bill_id         Int
+  number          String   // The number entered (e.g., "123")
+  quantity        Int
+  stake_per_unit  Decimal  @db.Decimal(10, 2)
+  pattern_flags   Int      // Bit flags for pattern (SET, ANY, BOXK, ALL, etc.)
+  expanded_count  Int      @default(1) // How many actual entries after expansion
+  series          String?  // Series if applicable (for ALL mode)
+  created_at      DateTime @default(now())
+
+  // Relations
+  bill            Bill       @relation(fields: [bill_id], references: [id], onDelete: Cascade)
+  winnings        Winning[]
+
+  @@index([bill_id])
+  @@map("bill_entries")
+}
+
+model SalesTicketAssignment {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  section_id       Int
+  date             DateTime @db.Date
+  game_group_id    Int
+  sales_group_id   Int
+  sales_sub_group_id Int
+  is_console       Boolean  @default(false)
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  // Relations
+  user             User          @relation(fields: [user_id], references: [id])
+  section          Section       @relation(fields: [section_id], references: [id])
+  game_group       GameGroup     @relation(fields: [game_group_id], references: [id])
+  sales_group      SalesGroup    @relation(fields: [sales_group_id], references: [id])
+  sales_sub_group  SalesSubGroup @relation(fields: [sales_sub_group_id], references: [id])
+
+  @@unique([user_id, section_id, date, game_group_id, sales_sub_group_id])
+  @@map("sales_ticket_assignments")
+}
+
+// ============ Inventory (Admin) ============
+
+model TicketProduct {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique // e.g., "SET", "ANY", "ALL", "BOXK"
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  // Relations
+  ticket_books TicketBook[]
+
+  @@map("ticket_products")
+}
+
+model TicketBook {
+  id          Int      @id @default(autoincrement())
+  product_id  Int
+  book_code   String   @unique
+  start_no    String
+  end_no      String
+  assigned_to Int?
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  product     TicketProduct @relation(fields: [product_id], references: [id])
+
+  @@map("ticket_books")
+}
+
+// ============ Settlement ============
+
+enum WinningStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Result {
+  id              Int      @id @default(autoincrement())
+  section_id      Int
+  date            DateTime @db.Date
+  winning_number  String
+  series          String?
+  published_by    Int
+  published_at    DateTime @default(now())
+  is_revoked      Boolean  @default(false)
+  revoked_at      DateTime?
+  revoked_by      Int?
+
+  // Relations
+  section         Section  @relation(fields: [section_id], references: [id])
+  publisher       User     @relation(fields: [published_by], references: [id])
+
+  @@unique([section_id, date])
+  @@map("results")
+}
+
+model Winning {
+  id            Int           @id @default(autoincrement())
+  bill_entry_id Int
+  amount        Decimal       @db.Decimal(10, 2)
+  status        WinningStatus @default(PENDING)
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+
+  // Relations
+  bill_entry    BillEntry     @relation(fields: [bill_entry_id], references: [id])
+
+  @@map("winnings")
+}
+
+enum LedgerType {
+  DEBIT
+  CREDIT
+  SETTLEMENT
+}
+
+model Ledger {
+  id          Int        @id @default(autoincrement())
+  user_id     Int?
+  type        LedgerType
+  amount      Decimal    @db.Decimal(10, 2)
+  description String?
+  reference   String?    // Reference to bill_id, result_id, etc.
+  created_at  DateTime   @default(now())
+
+  @@index([user_id])
+  @@map("ledger")
+}
+
+// ============ Controls ============
+
+model BlockedNumber {
+  id          Int      @id @default(autoincrement())
+  pattern     String   // e.g., "123", "12*", "*23"
+  section_id  Int?     // null means all sections
+  group_id    Int?     // null means all groups
+  max_count   Int?     // null means completely blocked
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("blocked_numbers")
+}
+
+model BlockRule {
+  id          Int      @id @default(autoincrement())
+  name        String
+  pattern     String
+  scope       String   // "SECTION", "GROUP", "GLOBAL"
+  scope_id    Int?
+  max_amount  Decimal? @db.Decimal(10, 2)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("block_rules")
+}
+
+model CreditLimit {
+  id           Int      @id @default(autoincrement())
+  user_id      Int      @unique
+  limit_amount Decimal  @db.Decimal(12, 2)
+  used_amount  Decimal  @db.Decimal(12, 2) @default(0)
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relations
+  user         User     @relation(fields: [user_id], references: [id])
+
+  @@map("credit_limits")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actor_id   Int?
+  action     String   // e.g., "CREATE_BILL", "PUBLISH_RESULT"
+  entity     String   // e.g., "Bill", "Result"
+  entity_id  Int?
+  payload    Json?
+  created_at DateTime @default(now())
+
+  // Relations
+  actor      User?    @relation(fields: [actor_id], references: [id])
+
+  @@index([actor_id])
+  @@index([created_at])
+  @@map("audit_logs")
+}
