@@ -6,6 +6,9 @@
 - Prisma migrations folder is absent (backend/prisma/migrations missing).
 - Apps present: apps/user-app (Expo), apps/admin-app (Expo); no mobile-app workspace.
 - Docs under "docs 2" include canonical API contract and spec; actual code only implements partial routes.
+- User app App.tsx contains only placeholder static screens (Login, Home, SalesEntry, OfflineQueue) with no real flows or navigation drawer.
+- Admin app App.tsx contains placeholder static screens (Login, Dashboard, Masters, ResultPublish); no masters or reports implemented.
+- Backend routes limited to auth, sections, sales-groups/sub-groups, schemes, sales/create_bill, results, and limited reports; missing draws/tickets/rates/blocked/limits/ticket assignments/bills CRUD/validate-lines/paginated reports/payments per spec.
 
 ## BELIEF
 - Installing dependencies will require generating a new lockfile using npm (due to workspaces).
