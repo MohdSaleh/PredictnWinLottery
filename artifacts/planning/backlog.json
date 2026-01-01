@@ -1,0 +1,56 @@
+[
+  {
+    "id": "P0-lockfile",
+    "type": "chore",
+    "priority": "P0",
+    "title": "Add package-lock and install workspace deps",
+    "evidence": "npm ci fails due to missing package-lock.json",
+    "acceptance": "package-lock.json committed; npm ci succeeds across workspaces",
+    "status": "todo"
+  },
+  {
+    "id": "P0-migrations",
+    "type": "chore",
+    "priority": "P0",
+    "title": "Add Prisma migrations and env sample",
+    "evidence": "backend/prisma/migrations missing; DATABASE_URL unspecified",
+    "acceptance": "migrate/seed run successfully with docker-compose Postgres; .env.example present",
+    "status": "todo"
+  },
+  {
+    "id": "P0-api-contract",
+    "type": "feature",
+    "priority": "P0",
+    "title": "Align backend API with spec (ticket assignment, bet_mode, error codes, reports)",
+    "evidence": "Routes missing: ticket assignment; create_bill ignores bet_mode; error code mismatch",
+    "acceptance": "Endpoints implemented and tested per spec; responses follow canonical schema",
+    "status": "todo"
+  },
+  {
+    "id": "P0-ui-apps",
+    "type": "feature",
+    "priority": "P0",
+    "title": "Implement Users and Admin app flows per spec and screenshots",
+    "evidence": "Apps are bare Expo scaffolds; required screens absent",
+    "acceptance": "Screens and flows implemented with consistent states; smoke instructions under 20 minutes",
+    "status": "todo"
+  },
+  {
+    "id": "P0-ui-docs",
+    "type": "chore",
+    "priority": "P0",
+    "title": "Create UI acceptance and evidence docs with smoke instructions",
+    "evidence": "docs/UI_ACCEPTANCE.md and docs/UI_EVIDENCE.md absent; no smoke runbook",
+    "acceptance": "Docs contain screen-wise DoD, states, and <20 min smoke steps with expected outcomes",
+    "status": "todo"
+  },
+  {
+    "id": "P0-backend-spec-gap",
+    "type": "feature",
+    "priority": "P0",
+    "title": "Implement missing backend endpoints per spec (draws/tickets/rates/blocked/limits/assignments/bills/reports)",
+    "evidence": "backend routes limited to auth/sections/sales-groups/schemes/sales/create_bill/results/reports; missing draws/tickets/rates/blocked/limits/ticket assignment/bills CRUD",
+    "acceptance": "All spec endpoints available with canonical responses and pagination; verified by targeted tests/smokes",
+    "status": "todo"
+  }
+]
