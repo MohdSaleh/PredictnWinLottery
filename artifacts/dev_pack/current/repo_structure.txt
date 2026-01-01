@@ -1,0 +1,26 @@
+.
+./.git
+./.git/hooks
+./.git/info
+./.git/logs
+./.git/objects
+./.git/refs
+./apps
+./apps/admin-app
+./apps/user-app
+./artifacts
+./artifacts/dev_pack
+./artifacts/planning
+./artifacts/runs
+./artifacts/validation
+./backend
+./backend/prisma
+./backend/src
+./docs 2
+./docs 2/inputs
+./docs 2/logs
+./docs 2/screens
+./packages
+./packages/shared
+./sourcecode-base-graph
+./sourcecode-base-graph/v0001

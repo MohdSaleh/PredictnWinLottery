@@ -1,0 +1,4 @@
+copilot/evaluate-project-readiness
+cdbef6e0ab86ae6b3c6e754884e92574b5d605f8
+## copilot/evaluate-project-readiness...origin/copilot/evaluate-project-readiness
+?? artifacts/

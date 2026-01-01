@@ -1,0 +1,14 @@
+# Component Map
+- backend/
+  - src/index.ts: server bootstrap, routes mount, health.
+  - src/routes/auth.ts: login/me with JWT.
+  - src/routes/sections.ts: active sections, details with group mapping.
+  - src/routes/sales-groups.ts, sales-sub-groups.ts, schemes.ts: master CRUD basics.
+  - src/routes/sales.ts: create_bill logic with gates (cutoff, ticket assignment, blocks, credit) using SalesService.
+  - src/routes/results.ts: publish/revoke/get results.
+  - src/routes/reports.ts: number-wise, net-pay, winning reports.
+  - src/services/sales.service.ts: gates for cutoff, ticket assignment, number blocks, credit limit; macro expansions.
+  - prisma/schema.prisma: DB schema (no migrations folder).
+- apps/user-app: Expo scaffold (no implemented screens).
+- apps/admin-app: Expo scaffold (no implemented screens).
+- packages/shared: shared TS types for API payloads.

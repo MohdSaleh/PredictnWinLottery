@@ -1,0 +1,5 @@
+v20.19.6
+10.8.2
+Python 3.12.3
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.12)
+go version go1.24.11 linux/amd64

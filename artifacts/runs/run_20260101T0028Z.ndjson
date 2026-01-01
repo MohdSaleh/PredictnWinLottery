@@ -1,0 +1,4 @@
+{"step":"init","ts":"$(date -Is)","detail":"Created artifacts directories and initial dev pack"}
+{"step":"env","detail":"Captured host_info, tool_versions, git_snapshot, repo_structure, dependency_snapshot"}
+{"step":"planning","detail":"Initialized backlog, roadmap, decision_log"}
+{"step":"validation","detail":"Recorded validation placeholders (not run due to missing lockfile)"}
